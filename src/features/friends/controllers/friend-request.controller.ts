@@ -24,8 +24,8 @@ import { AcceptFriendRequest } from '../dto/request/accept-friend-request.reques
 import { PendingFriendRequestResponse } from '../dto/response/pending-friend-request.response';
 
 interface AuthenticatedRequest {
-  user: { id: number; email: string },
-  roles : string[]
+  user: { id: number; email: string };
+  roles: string[];
 }
 
 @ApiTags('Friend Requests')

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Users } from '../entity/users.entity';
 import { Roles } from '../entity/roles.entity';
 
@@ -43,6 +43,14 @@ export class UserRepository {
     return await this.repo.findOne({
       where: {
         identifier,
+      },
+    });
+  }
+
+  async findUsersByIdentifiers(identifiers: string[]) {
+    return await this.repo.find({
+      where: {
+        identifier: In(identifiers),
       },
     });
   }
