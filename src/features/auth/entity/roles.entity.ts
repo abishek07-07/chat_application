@@ -17,8 +17,8 @@ export class Roles {
   @Column({ name: 'name', nullable: false, unique: true, length: 50 })
   name!: string;
 
-  @Column({name:"abbreviation", nullable: false, unique : true})
-  abbrevation! : string 
+  @Column({ name: 'abbreviation', nullable: false, unique: true })
+  abbrevation!: string;
 
   @Column({ name: 'description', nullable: true, length: 255 })
   description!: string;

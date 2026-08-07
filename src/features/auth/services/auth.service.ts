@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { IAuthService } from './interface';
 import { UserRepository } from '../respository/users.repository';
 import { UserLoginRequest } from '../dto/request/user-login.request';
@@ -16,7 +20,7 @@ import { Results } from '@src/utils/responses/SuccessfulResponse';
 import { RolesRepository } from '../respository/roles.repository';
 import { RolesConstants } from '../constants/permissions.constants';
 import { Users } from '../entity/users.entity';
- export interface IJwtToken {
+export interface IJwtToken {
   email: string;
   id: number;
 }
@@ -26,13 +30,13 @@ export class AuthService implements IAuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JsonWebTokenService,
-    private readonly rolesRepository : RolesRepository
+    private readonly rolesRepository: RolesRepository,
   ) {}
 
   async loginUser(
     request: UserLoginRequest,
   ): Promise<UserLoginIntermediateResponse> {
-    var userwithMailExists = await this.userRepository.findUserByEmail(
+    const userwithMailExists = await this.userRepository.findUserByEmail(
       request.email,
     );
     if (!userwithMailExists)
@@ -40,7 +44,7 @@ export class AuthService implements IAuthService {
 
     // validation of password
 
-    var isPasswordCorrect = Hashing.compareData(
+    const isPasswordCorrect = Hashing.compareData(
       request.password,
       userwithMailExists.password,
     );
@@ -50,53 +54,61 @@ export class AuthService implements IAuthService {
 
     // creating the access token and the refresh token
 
-    var accesstoken = await this.jwtService.sign<IJwtToken>({
+    const accesstoken = await this.jwtService.sign<IJwtToken>({
       email: userwithMailExists.email,
       id: userwithMailExists.id,
     });
 
-    let refreshtoken = await this.jwtService.signWithOptions<IJwtToken>({
-      email: userwithMailExists.email, 
-      id : userwithMailExists.id
-    }, {
-      expiresIn: 1000*60*60*24*15 // 15 days
-    })
-    var response = new UserLoginIntermediateResponse();
+    const refreshtoken = await this.jwtService.signWithOptions<IJwtToken>(
+      {
+        email: userwithMailExists.email,
+        id: userwithMailExists.id,
+      },
+      {
+        expiresIn: 1000 * 60 * 60 * 24 * 15, // 15 days
+      },
+    );
+    const response = new UserLoginIntermediateResponse();
     response.accessToken = accesstoken;
     response.user = plainToInstance(UsersResponse, userwithMailExists, {
       excludeExtraneousValues: true,
     });
     response.refreshToken = refreshtoken;
 
-   return response; 
+    return response;
   }
 
   async registerUser(request: UserRegisterRequest): Promise<IResult<null>> {
     try {
+      const userExists = await this.userRepository.findUserByEmail(
+        request.email,
+      );
 
-      var userExists = await this.userRepository.findUserByEmail(request.email); 
+      if (userExists)
+        throw new BadRequestException('User with the same mail already exists');
 
+      const findrole = await this.rolesRepository.findRoleByAbbr(
+        RolesConstants.USERS,
+      );
 
-      if(userExists) throw new BadRequestException('User with the same mail already exists'); 
-      
-    var findrole = await this.rolesRepository.findRoleByAbbr(RolesConstants.USERS);
+      if (!findrole)
+        throw new InternalServerErrorException(
+          'The role required in the userRegistration do not exists ',
+        );
 
-    if(!findrole) throw new InternalServerErrorException('The role required in the userRegistration do not exists '); 
+      await this.userRepository.saveUser(
+        {
+          firstName: request.firstName,
+          lastName: request.lastName,
+          email: request.email,
+          password: Hashing.hashData(request.password),
+        },
+        findrole,
+      );
 
-
-        await this.userRepository.saveUser({
-        firstName: request.firstName, 
-        lastName: request.lastName, 
-        email: request.email,
-        password : Hashing.hashData(request.password), 
-      }, findrole); 
-
-
-      return Results('User registered Successfully', null); 
+      return Results('User registered Successfully', null);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
-
-
   }
 }
