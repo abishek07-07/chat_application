@@ -30,8 +30,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: IJwtToken) {
     return {
-      id : payload.id, 
-      email : payload.email
-    }
+      id: payload.id,
+      email: payload.email,
+    };
   }
 }

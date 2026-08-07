@@ -10,6 +10,7 @@ import databaseConfig from '@config/database.config';
 import dotenv from 'dotenv';
 import { JsonWebTokenModule } from './common/jsonwebtoken/jwt.module';
 import { AuthModule } from './features/auth/auth.module';
+import { FriendsModule } from './features/friends/friends.module';
 dotenv.config();
 @Module({
   imports: [
@@ -21,7 +22,8 @@ dotenv.config();
     DatabaseModule,
     WnModule,
     JsonWebTokenModule,
-    AuthModule
+    AuthModule,
+    FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

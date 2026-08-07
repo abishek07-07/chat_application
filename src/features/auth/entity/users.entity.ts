@@ -13,8 +13,8 @@ export class Users {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({name:"identifier", nullable: false, unique :true, type:"uuid" })
-  identifier !: string 
+  @Column({ name: 'identifier', nullable: false, unique: true, type: 'uuid' })
+  identifier!: string;
 
   @Column({ name: 'email', nullable: false, unique: true })
   email!: string;
@@ -30,7 +30,6 @@ export class Users {
 
   @Column({ name: 'is_active', default: true })
   isActive!: boolean;
-
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
