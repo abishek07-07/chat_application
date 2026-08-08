@@ -9,7 +9,7 @@ async function bootstrap(app: INestApplication) {
     .addTag('cats')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('api/docs', app, documentFactory);
 }
 
 export { bootstrap as Swagger };
