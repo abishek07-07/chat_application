@@ -7,8 +7,6 @@ import {
 } from '../dto/response/user-login.response';
 
 export interface IAuthService {
-  loginUser(
-    request: UserLoginRequest,
-  ): Promise<UserLoginIntermediateResponse>;
+  loginUser(request: UserLoginRequest): Promise<UserLoginIntermediateResponse>;
   registerUser(request: UserRegisterRequest): Promise<IResult<null>>;
 }

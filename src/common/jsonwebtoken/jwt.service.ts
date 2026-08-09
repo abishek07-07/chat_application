@@ -1,9 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import {
-  JwtService,
-  JwtSignOptions,
-  JwtVerifyOptions,
-} from "@nestjs/jwt";
+import { Injectable } from '@nestjs/common';
+import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
 
 @Injectable()
 export class JsonWebTokenService {
@@ -20,11 +16,9 @@ export class JsonWebTokenService {
     return this.jwtService.signAsync(payload, options);
   }
 
-
   async validate<T extends object>(token: string): Promise<T> {
     return this.jwtService.verifyAsync<T>(token);
   }
-
 
   async validateWithOptions<T extends object>(
     token: string,
@@ -34,6 +28,6 @@ export class JsonWebTokenService {
   }
 
   decode<T = unknown>(token: string): T | null {
-    return this.jwtService.decode(token) as T | null;
+    return this.jwtService.decode(token);
   }
 }
