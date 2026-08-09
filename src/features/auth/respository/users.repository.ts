@@ -57,18 +57,14 @@ export class UserRepository {
 
   async findUserPermissions(id: number) {
     return await this.repo.findOne({
-      where: {
-        id,
-      },
-      relationLoadStrategy: 'join',
-      cache: true,
-      loadRelationIds: true,
-      select: {
+      where: { id },
+      relations: {
         roles: {
-          permissions: {
-            name: true,
-          },
+          permissions: true,
         },
+      },
+      select: {
+        roles: true,
       },
     });
   }

@@ -12,6 +12,7 @@ import { JsonWebTokenModule } from './common/jsonwebtoken/jwt.module';
 import { AuthModule } from './features/auth/auth.module';
 import { FriendsModule } from './features/friends/friends.module';
 import { ChatModule } from './features/chats/chats.module';
+import { MessagesModule } from './features/messages/messages.module';
 dotenv.config();
 @Module({
   imports: [
@@ -26,6 +27,7 @@ dotenv.config();
     AuthModule,
     FriendsModule,
     ChatModule,
+    MessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

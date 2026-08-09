@@ -8,6 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { UserRepository } from '../respository/users.repository';
+import { Users } from '../entity/users.entity';
 
 @Injectable()
 export class PermissionsInterceptor implements NestInterceptor {
@@ -23,11 +24,25 @@ export class PermissionsInterceptor implements NestInterceptor {
     const permissionsofUser =
       await this.usersRepository.findUserPermissions(userid);
 
-    if (permissionsofUser?.roles == null)
+    if (
+      (permissionsofUser?.roles.length as number) <= 0 ||
+      permissionsofUser == null
+    )
       throw new UnauthorizedException('No permissions exists for the user');
 
-    request.permissions = permissionsofUser.roles;
+    const perm = this.getPermissions(permissionsofUser as Users);
+
+    if (perm == null || perm.length <= 0)
+      throw new UnauthorizedException('No permissions exists for the user');
+
+    request.permissions = perm;
 
     return next.handle().pipe();
+  }
+
+  private getPermissions(users: Users): string[] {
+    return users.roles.flatMap(({ permissions }) =>
+      permissions.map(({ name }) => name),
+    );
   }
 }

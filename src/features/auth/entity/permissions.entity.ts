@@ -21,8 +21,8 @@ export class Permissions {
   @Column({ name: 'description', nullable: true, length: 255 })
   description!: string;
 
-  @Column({ name: 'resource', nullable: false, length: 50 })
-  resource!: string;
+  @Column({ name: 'resource', nullable: true, length: 50 })
+  resource?: string;
 
   @Column({ name: 'action', nullable: false, length: 50 })
   action!: string;

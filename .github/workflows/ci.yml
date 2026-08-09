@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    env:
+        NODE_ENV:  development
+        SWAGGER_TITLE: messaging_app
+        SWAGGER_DESCRIPTION: The application is the testing app for the messages
+        SWAGGER_VERSION: 1
+        SWAGGER_TAG: 1
+        PORT: 4000
+        DB_HOST: postgres
+        DB_PORT: 5433
+        DB_USERNAME: user
+        DB_PASSWORD: password
+        DB_DATABASE: messaging
+        DB_SSL: false
+        COOKIE_MAX_AGE : 86400
+        JWT_SECRET : alongpasswordisokforthe_development_of_the_app
+        JWT_AUDIENCE : http://localhost:5173
+        JWT_ISSUER: http://localhost:4000
+        JWT_EXPIRES_IN : 18000000     # 10000 * 60* 60 * 5 
+        JWT_ALGORITHM : HS512
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start PostgreSQL
+        run: docker compose -f compose-dev.yml up -d --wait
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Run e2e tests
+        run: pnpm run test:e2e
