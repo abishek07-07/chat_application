@@ -30,7 +30,7 @@ export class PermissionsInterceptor implements NestInterceptor {
     )
       throw new UnauthorizedException('No permissions exists for the user');
 
-    const perm = this.getPermissions(permissionsofUser as Users);
+    const perm = this.getPermissions(permissionsofUser);
 
     if (perm == null || perm.length <= 0)
       throw new UnauthorizedException('No permissions exists for the user');

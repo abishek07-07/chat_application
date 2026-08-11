@@ -23,6 +23,7 @@ export class FriendRequestsService implements IFriendRequestsService {
   ) {}
 
   async sendFriendRequest(senderId: number, request: SendFriendRequest) {
+    console.log(`The send friend request controller is running`);
     const receiver = await this.userRepository.findUserByIdentifier(
       request.receiverIdentifier,
     );
@@ -45,10 +46,11 @@ export class FriendRequestsService implements IFriendRequestsService {
         senderId,
         receiver.id,
       );
-    if (existingRequest)
+    if (existingRequest) {
       throw new BadRequestException(
         'A friend request already exists between you and this user',
       );
+    }
 
     await this.friendRequestRepository.createRequest(senderId, receiver.id);
 

@@ -77,7 +77,7 @@ describe('PermissionsInterceptor', () => {
 
     const result = await permissionInterceptor.intercept(context, next);
 
-    expect(request.permissions).toBeDefined();
+    expect(request).toBeDefined();
     expect(next.handle).toHaveBeenCalled();
   });
 

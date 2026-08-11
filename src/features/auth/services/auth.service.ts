@@ -7,10 +7,7 @@ import { IAuthService } from './interface';
 import { UserRepository } from '../respository/users.repository';
 import { UserLoginRequest } from '../dto/request/user-login.request';
 import { UserRegisterRequest } from '../dto/request/user-register.request';
-import {
-  UserLoginIntermediateResponse,
-  UserLoginResponse,
-} from '../dto/response/user-login.response';
+import { UserLoginIntermediateResponse } from '../dto/response/user-login.response';
 import { Hashing } from '@src/utils/hashing/bcrypt';
 import { JsonWebTokenService } from '@src/common/jsonwebtoken/jwt.service';
 import { plainToInstance } from 'class-transformer';
@@ -19,7 +16,6 @@ import { IResult } from '@src/utils/responses/SuccessfulResponse';
 import { Results } from '@src/utils/responses/SuccessfulResponse';
 import { RolesRepository } from '../respository/roles.repository';
 import { RolesConstants } from '../constants/permissions.constants';
-import { Users } from '../entity/users.entity';
 export interface IJwtToken {
   email: string;
   id: number;
