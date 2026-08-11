@@ -3,6 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ChatMembers } from '../entities/chats-members.entites';
 
+interface users {
+  id: number;
+  isAdmin: boolean;
+  alias?: string;
+}
+
 @Injectable()
 export class ChatMembersRepository {
   constructor(
@@ -24,11 +30,18 @@ export class ChatMembersRepository {
     return this.repo.save(member);
   }
 
-  async addMembers(chatId: number, userIds: number[]): Promise<void> {
-    const members = userIds.map((userId) =>
-      this.repo.create({ chatId, userId }),
+  async createFirstChat(chatId: number, users: users[]): Promise<void> {
+    const members = users.map((userId) =>
+      this.repo.create({ chatId, ...userId }),
     );
     await this.repo.save(members);
+  }
+
+  async addMembers(chatId: number, users: number[]) {
+    const temp = users.map((usr) => {
+      return this.repo.create({ chatId, userId: usr, isAdmin: false });
+    });
+    await this.repo.save(temp);
   }
 
   async findMember(

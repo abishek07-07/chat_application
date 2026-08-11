@@ -13,6 +13,7 @@ import { AuthModule } from './features/auth/auth.module';
 import { FriendsModule } from './features/friends/friends.module';
 import { ChatModule } from './features/chats/chats.module';
 import { MessagesModule } from './features/messages/messages.module';
+import { SocketModule } from './sockets/sockets.module';
 dotenv.config();
 @Module({
   imports: [
@@ -28,6 +29,7 @@ dotenv.config();
     FriendsModule,
     ChatModule,
     MessagesModule,
+    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

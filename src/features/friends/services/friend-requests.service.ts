@@ -13,6 +13,9 @@ import { FriendRequestRepository } from '../repository/friend-request.repository
 import { FriendsRepository } from '../repository/friends.repository';
 import { FriendRequestStatus } from '../entity/friend-request.entity';
 import { IFriendRequestsService } from './interface';
+import { ChatsRepository } from '@src/features/chats/repository/chats.repository';
+import { ChatMembersRepository } from '@src/features/chats/repository/chat-members.repository';
+import { Chats, ChatType } from '@src/features/chats/entities/chat.entities';
 
 @Injectable()
 export class FriendRequestsService implements IFriendRequestsService {
@@ -20,6 +23,8 @@ export class FriendRequestsService implements IFriendRequestsService {
     private readonly friendRequestRepository: FriendRequestRepository,
     private readonly friendsRepository: FriendsRepository,
     private readonly userRepository: UserRepository,
+    private readonly chatRepository: ChatsRepository,
+    private readonly chatMembersRepository: ChatMembersRepository,
   ) {}
 
   async sendFriendRequest(senderId: number, request: SendFriendRequest) {
@@ -87,6 +92,27 @@ export class FriendRequestsService implements IFriendRequestsService {
       friendRequest.receiverId,
     );
 
+    // after the friendship is created we have to create the chats and the chat_members of it
+    let chats: Chats;
+    try {
+      chats = await this.chatRepository.createChat({
+        type: ChatType.SINGLE,
+      });
+    } catch (error) {
+      console.log('Error in creating the chats', error);
+      throw error;
+    }
+    if (chats.id == null) throw new Error('The chat id do not exists');
+    await this.chatMembersRepository.createFirstChat(chats.id, [
+      {
+        id: friendRequest.senderId,
+        isAdmin: true,
+      },
+      {
+        id: friendRequest.receiverId,
+        isAdmin: true,
+      },
+    ]);
     return Results('Friend request accepted', null);
   }
 

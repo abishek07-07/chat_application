@@ -18,7 +18,12 @@ import { ChatsService } from './services/chats.services';
     ChatsService,
     ChatMembersService,
   ],
-  exports: [ChatsService, ChatMembersService, ChatMembersRepository],
+  exports: [
+    ChatsService,
+    ChatMembersService,
+    ChatMembersRepository,
+    ChatsRepository,
+  ],
   controllers: [ChatsController, ChatMemberController],
 })
 export class ChatModule {}

@@ -8,6 +8,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// map for the userid and the socketid
+const mapuserIdSocketID: Map<number, string> = new Map();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
@@ -26,3 +28,5 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
+
+export { mapuserIdSocketID };

@@ -9,9 +9,14 @@ import { FriendRequestRepository } from './repository/friend-request.repository'
 import { FriendsRepository } from './repository/friends.repository';
 import { FriendRequestsService } from './services/friend-requests.service';
 import { FriendsService } from './services/friends.service';
+import { ChatModule } from '../chats/chats.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FriendRequests, Friends]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([FriendRequests, Friends]),
+    AuthModule,
+    ChatModule,
+  ],
   providers: [
     FriendRequestRepository,
     FriendsRepository,
