@@ -22,7 +22,7 @@ import { Permissions } from '@src/features/auth/entity/permissions.entity';
         database: config.get<string>('database.name'),
         logging: true,
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         entities: [Users, Roles, Permissions],
       }),
     }),

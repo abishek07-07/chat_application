@@ -43,11 +43,14 @@ export class FriendRequestController {
     description: 'Invalid payload or a request already exists.',
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
-  sendFriendRequest(
+  async sendFriendRequest(
     @Request() req: AuthenticatedRequest,
     @Body() request: SendFriendRequest,
   ) {
-    return this.friendRequestsService.sendFriendRequest(req.user.id, request);
+    return await this.friendRequestsService.sendFriendRequest(
+      req.user.id,
+      request,
+    );
   }
 
   @Get('pending')
@@ -60,8 +63,8 @@ export class FriendRequestController {
     isArray: true,
   })
   @ApiUnauthorizedResponse({ description: 'Unauthorized.' })
-  getPendingRequests(@Request() req: AuthenticatedRequest) {
-    return this.friendRequestsService.getPendingRequests(req.user.id);
+  async getPendingRequests(@Request() req: AuthenticatedRequest) {
+    return await this.friendRequestsService.getPendingRequests(req.user.id);
   }
 
   @Post('accept')

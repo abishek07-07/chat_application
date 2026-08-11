@@ -1,5 +1,6 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
@@ -36,6 +37,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     switch (status) {
       case HttpStatus.BAD_REQUEST:
+        if (error instanceof BadRequestException) {
+          const exerror = error.getResponse();
+          console.log(exerror);
+        }
         this.logger.warn('Bad Request', {
           ...logContext,
           error,
