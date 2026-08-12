@@ -14,8 +14,9 @@ import { LoggingService } from '@src/utils/logging/logger.service';
 import { JsonWebTokenService } from '@src/common/jsonwebtoken/jwt.service';
 import { IJwtToken } from '@src/features/auth/services/auth.service';
 import { mapuserIdSocketID } from '@src/main';
-import { SEND_MESSAGE, TYPING_STARTED } from './constants';
+import { MESSAGE_FROM_SERVER, SEND_MESSAGE, TYPING_STARTED } from './constants';
 import { SendMessageRequest } from './request/send-message.request';
+import { MessageSocketService } from './services/send-message.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @WebSocketGateway({})
 export class MessagesGateway
@@ -25,6 +26,7 @@ export class MessagesGateway
   constructor(
     private readonly loggerService: LoggingService,
     private readonly jwtService: JsonWebTokenService,
+    private readonly messageService: MessageSocketService,
   ) {}
 
   async handleConnection(client: Socket) {
@@ -38,7 +40,7 @@ export class MessagesGateway
 
     if (!verification)
       throw new WsException('The verification failed for the user ');
-
+    client.user = verification.id;
     // saving the data in the redis or map, for now map
     mapuserIdSocketID.set(verification.id, client.id);
   }
@@ -49,7 +51,11 @@ export class MessagesGateway
   async sendMessage(
     client: Socket,
     @MessageBody() request: SendMessageRequest,
-  ) {}
+  ) {
+    request.senderId = client.user;
+    const response = await this.messageService.sendMessage(request);
+    client.to(request.chatId.toString()).emit(MESSAGE_FROM_SERVER, response);
+  }
 
   @SubscribeMessage(TYPING_STARTED)
   async typingStarted() {}

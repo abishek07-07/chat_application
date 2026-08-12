@@ -4,8 +4,8 @@ import { IsNumber } from 'class-validator';
 export class SendMessageRequest {
   @IsNumber()
   chatId!: number;
-  senderId!: number;
+  senderId?: number;
   message!: string;
   messageType!: MessageType;
-  attachment!: ArrayBuffer;
+  attachment!: Buffer;
 }
