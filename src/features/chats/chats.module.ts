@@ -9,6 +9,7 @@ import { ChatMembersRepository } from './repository/chat-members.repository';
 import { ChatsRepository } from './repository/chats.repository';
 import { ChatMembersService } from './services/chats-members.services';
 import { ChatsService } from './services/chats.services';
+import { IdCryptoService } from '@src/features/messages/utils/id-crypto.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Chats, ChatMembers]), AuthModule],
@@ -17,6 +18,7 @@ import { ChatsService } from './services/chats.services';
     ChatMembersRepository,
     ChatsService,
     ChatMembersService,
+    IdCryptoService,
   ],
   exports: [
     ChatsService,

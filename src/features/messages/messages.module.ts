@@ -22,7 +22,7 @@ import { IdCryptoService } from './utils/id-crypto.service';
     MessagesService,
     IdCryptoService,
   ],
-  exports: [MessagesService],
+  exports: [MessagesService, MessagesRepository],
   controllers: [MessagesController],
 })
 export class MessagesModule {}

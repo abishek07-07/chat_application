@@ -97,6 +97,7 @@ export class FriendRequestsService implements IFriendRequestsService {
     try {
       chats = await this.chatRepository.createChat({
         type: ChatType.SINGLE,
+        createdBy: receiverId,
       });
     } catch (error) {
       console.log('Error in creating the chats', error);

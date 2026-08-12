@@ -6,5 +6,5 @@ export class SendMessageResponse {
   sender!: UsersResponse;
   message!: string;
   messageType!: MessageType;
-  attachment!: string; // we can save the buffer in the cloudinary or also save as the buffer
+  attachment?: string; // we can save the buffer in the cloudinary or also save as the buffer
 }
