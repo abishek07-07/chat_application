@@ -11,7 +11,8 @@ export interface IChatsService {
     userId: number,
     request: CreateChatRequest,
   ): Promise<IResult<ChatResponse>>;
-  getUserChats(userId: number): Promise<IResult<ChatResponse[]>>;
+  // getUserChats(userId: number): Promise<IResult<ChatResponse[]>>;
+  getUserChats(userId: number);
   getChatById(userId: number, chatId: number): Promise<IResult<ChatResponse>>;
   updateChat(
     userId: number,

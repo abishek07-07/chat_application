@@ -10,7 +10,11 @@ export class ChatsRepository {
     private readonly repo: Repository<Chats>,
   ) {}
 
-  async createChat(data: { type: ChatType; name?: string }): Promise<Chats> {
+  async createChat(data: {
+    type: ChatType;
+    createdBy: number;
+    name?: string;
+  }): Promise<Chats> {
     const chat = this.repo.create(data);
     return this.repo.save(chat);
   }
@@ -52,5 +56,23 @@ export class ChatsRepository {
 
   async deleteChat(id: number): Promise<void> {
     await this.repo.delete({ id });
+  }
+
+  async getChatAlongwithMessagesofUser(userId: number) {
+    const response = await this.repo
+      .createQueryBuilder('chat')
+      .leftJoinAndSelect('chat.members', 'members')
+      .leftJoinAndSelect('members.user', 'user')
+      .leftJoinAndSelect(
+        'chat.messages',
+        'messages',
+        'messages.id = (SELECT m.id FROM messaging.messages m WHERE m.chat_id = chat.id AND m.is_deleted= false ORDER BY m.sent_at DESC LIMIT 1)',
+      )
+      .leftJoinAndSelect('messages.sender', 'sender')
+      .where('members.userId = :userId', { userId })
+
+      .getMany();
+
+    return response;
   }
 }

@@ -18,7 +18,12 @@ import { MESSAGE_FROM_SERVER, SEND_MESSAGE, TYPING_STARTED } from './constants';
 import { SendMessageRequest } from './request/send-message.request';
 import { MessageSocketService } from './services/send-message.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-@WebSocketGateway({})
+@WebSocketGateway({
+  cors:{
+    origin : "http://localhost:8080", 
+    credentials : true 
+  }
+})
 export class MessagesGateway
   implements OnGatewayDisconnect, OnGatewayConnection
 {

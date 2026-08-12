@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import * as common from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { UserRepository } from '@src/features/auth/respository/users.repository';
 import { Results } from '@src/utils/responses/SuccessfulResponse';
@@ -14,13 +9,17 @@ import { Chats, ChatType } from '../entities/chat.entities';
 import { ChatMembersRepository } from '../repository/chat-members.repository';
 import { ChatsRepository } from '../repository/chats.repository';
 import { IChatsService } from './interface';
+import { MessageResponse } from '@src/features/messages/dto/responses/message.response';
+import { Messages } from '@src/features/messages/entities/messages.entities';
+import { IdCryptoService } from '@src/features/messages/utils/id-crypto.service';
 
-@Injectable()
+@common.Injectable()
 export class ChatsService implements IChatsService {
   constructor(
     private readonly chatsRepository: ChatsRepository,
     private readonly chatMembersRepository: ChatMembersRepository,
     private readonly userRepository: UserRepository,
+    private readonly idCryptoService: IdCryptoService,
   ) {}
 
   async createChat(userId: number, request: CreateChatRequest) {
@@ -31,14 +30,16 @@ export class ChatsService implements IChatsService {
   }
 
   async getUserChats(userId: number) {
-    const chats = await this.chatsRepository.findChatsForUser(userId);
+    const chats =
+      await this.chatsRepository.getChatAlongwithMessagesofUser(userId);
+
     const data = chats.map((chat) => this.toResponse(chat));
     return Results('Chats fetched successfully', data);
   }
 
   async getChatById(userId: number, chatId: number) {
     const isMember = await this.chatMembersRepository.isMember(chatId, userId);
-    if (!isMember) throw new NotFoundException('Chat not found');
+    if (!isMember) throw new common.NotFoundException('Chat not found');
 
     return Results(
       'Chat fetched successfully',
@@ -48,9 +49,9 @@ export class ChatsService implements IChatsService {
 
   async updateChat(userId: number, chatId: number, request: UpdateChatRequest) {
     const chat = await this.chatsRepository.findChatById(chatId);
-    if (!chat) throw new NotFoundException('Chat not found');
+    if (!chat) throw new common.NotFoundException('Chat not found');
     if (chat.type !== ChatType.GROUP)
-      throw new BadRequestException('Only group chats can be renamed');
+      throw new common.BadRequestException('Only group chats can be renamed');
 
     await this.ensureAdmin(chatId, userId);
 
@@ -67,7 +68,7 @@ export class ChatsService implements IChatsService {
       chatId,
       userId,
     );
-    if (!membership) throw new NotFoundException('Chat not found');
+    if (!membership) throw new common.NotFoundException('Chat not found');
 
     await this.chatMembersRepository.removeMember(chatId, userId);
 
@@ -79,28 +80,31 @@ export class ChatsService implements IChatsService {
 
   private async createSingleChat(userId: number, request: CreateChatRequest) {
     if (!request.participantIdentifier)
-      throw new BadRequestException(
+      throw new common.BadRequestException(
         'participantIdentifier is required for single chats',
       );
 
     const participant = await this.userRepository.findUserByIdentifier(
       request.participantIdentifier,
     );
-    if (!participant) throw new NotFoundException('User not found');
+    if (!participant) throw new common.NotFoundException('User not found');
     if (participant.id === userId)
-      throw new BadRequestException('You cannot start a chat with yourself');
+      throw new common.BadRequestException(
+        'You cannot start a chat with yourself',
+      );
 
     const existing = await this.chatsRepository.findSingleChatBetweenUsers(
       userId,
       participant.id,
     );
     if (existing)
-      throw new BadRequestException(
+      throw new common.BadRequestException(
         'A single chat already exists with this user',
       );
 
     const chat = await this.chatsRepository.createChat({
       type: ChatType.SINGLE,
+      createdBy: userId,
     });
     await this.chatMembersRepository.addMembers(chat.id, [
       userId,
@@ -115,21 +119,24 @@ export class ChatsService implements IChatsService {
 
   private async createGroupChat(userId: number, request: CreateChatRequest) {
     if (!request.name)
-      throw new BadRequestException('A name is required for group chats');
+      throw new common.BadRequestException(
+        'A name is required for group chats',
+      );
 
     const identifiers = Array.from(new Set(request.memberIdentifiers ?? []));
     const members =
       await this.userRepository.findUsersByIdentifiers(identifiers);
     if (members.length !== identifiers.length)
-      throw new NotFoundException('One or more users were not found');
+      throw new common.NotFoundException('One or more users were not found');
     if (members.some((member) => member.id === userId))
-      throw new BadRequestException(
+      throw new common.BadRequestException(
         'You cannot add yourself to the chat twice',
       );
 
     const chat = await this.chatsRepository.createChat({
       type: ChatType.GROUP,
       name: request.name,
+      createdBy: userId,
     });
     await this.chatMembersRepository.addMember(chat.id, userId, {
       isAdmin: true,
@@ -150,20 +157,56 @@ export class ChatsService implements IChatsService {
       chatId,
       userId,
     );
-    if (!membership) throw new NotFoundException('Chat not found');
+    if (!membership) throw new common.NotFoundException('Chat not found');
     if (!membership.isAdmin)
-      throw new ForbiddenException('Only group admins can perform this action');
+      throw new common.ForbiddenException(
+        'Only group admins can perform this action',
+      );
   }
 
   private async buildResponse(chatId: number): Promise<ChatResponse> {
     const chat = await this.chatsRepository.findChatById(chatId);
-    if (!chat) throw new NotFoundException('Chat not found');
+    if (!chat) throw new common.NotFoundException('Chat not found');
     return this.toResponse(chat);
   }
 
   private toResponse(chat: Chats): ChatResponse {
-    return plainToInstance(ChatResponse, chat, {
+    const response = plainToInstance(ChatResponse, chat, {
       excludeExtraneousValues: true,
     });
+    response.messages = (chat.messages ?? []).map((message) =>
+      this.toMessageResponse(message),
+    );
+    return response;
+  }
+
+  private toMessageResponse(message: Messages): MessageResponse {
+    return {
+      key: this.idCryptoService.signMessageId(message.id),
+      chatId: message.chatId,
+      senderId: message.senderId,
+      type: message.type,
+      message: message.message,
+      attachmentUrl: message.attachmentUrl,
+      sentAt: message.sentAt,
+      isDeleted: message.isDeleted,
+      isEdited: message.isEdited,
+      editedAt: message.editedAt,
+      replyToMessageKey: message.replyToMessageId
+        ? this.idCryptoService.signMessageId(message.replyToMessageId)
+        : undefined,
+      sender: message.sender
+        ? {
+            id: message.sender.id,
+            email: message.sender.email,
+            firstName: message.sender.firstName,
+            lastName: message.sender.lastName,
+          }
+        : undefined,
+      reads: (message.reads ?? []).map((read) => ({
+        userId: read.userId,
+        seenAt: read.seenAt,
+      })),
+    };
   }
 }
